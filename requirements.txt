@@ -1,0 +1,7 @@
+tabulate
+numpy
+pandas
+scipy
+pyyaml
+torch
+torchvision

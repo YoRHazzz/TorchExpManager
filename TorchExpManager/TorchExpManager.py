@@ -263,26 +263,33 @@ class TorchExpManager:
                 if need_early_stop:
                     print("Early Stop!")
                     break
-
+        else:
+            self.saved_model_dir = os.path.join(self.exp_dir, "saved_model")
         ckpt = load_model(self.model_wrapper.model, self.saved_model_dir, "model_best.pt",
                           self.model_wrapper.device)
         if 'epoch' in ckpt:
             self.best_epoch = ckpt['epoch']
         test_summary_table, test_iter_summary, test_iter_details = \
             self.eval(self.best_epoch, num_epochs, test_summary_table, 'test')
-        test_iter_details.to_csv(
-            os.path.join(self.tmp_dir, 'epoch_details', f'epoch{num_epochs:>0{len(str(num_epochs))}d}_test.csv'),
-            index=False)
-        summary_table = pd.concat([train_summary_table, valid_summary_table, test_summary_table])
-        summary_table = summary_table.sort_values(by=['epoch', 'stage'], ascending=True)
+        print(tabulate(test_summary_table, headers='keys', tablefmt='psql', numalign='center', stralign='center',
+                       showindex=False))
 
-        train_summary_table.to_csv(os.path.join(self.tmp_dir, 'train_summary_table.csv'), index=False)
-        valid_summary_table.to_csv(os.path.join(self.tmp_dir, 'valid_summary_table.csv'), index=False)
-        test_summary_table.to_csv(os.path.join(self.tmp_dir, 'test_summary_table.csv'), index=False)
-        summary_table.to_csv(os.path.join(self.tmp_dir, 'summary_table.csv'), index=False)
+        if not self.only_test:
+            test_iter_details.to_csv(
+                os.path.join(self.tmp_dir, 'epoch_details',
+                             f'epoch{self.best_epoch:>0{len(str(num_epochs))}d}_test.csv'),
+                index=False)
 
-        print(f"move tmp_dir: {self.tmp_dir} -> {self.exp_dir}")
-        os.rename(self.tmp_dir, self.exp_dir)
+            summary_table = pd.concat([train_summary_table, valid_summary_table, test_summary_table])
+            summary_table = summary_table.sort_values(by=['epoch', 'stage'], ascending=True)
+
+            train_summary_table.to_csv(os.path.join(self.tmp_dir, 'train_summary_table.csv'), index=False)
+            valid_summary_table.to_csv(os.path.join(self.tmp_dir, 'valid_summary_table.csv'), index=False)
+            test_summary_table.to_csv(os.path.join(self.tmp_dir, 'test_summary_table.csv'), index=False)
+            summary_table.to_csv(os.path.join(self.tmp_dir, 'summary_table.csv'), index=False)
+
+            print(f"move tmp_dir: {self.tmp_dir} -> {self.exp_dir}")
+            os.rename(self.tmp_dir, self.exp_dir)
         pass
 
     @staticmethod

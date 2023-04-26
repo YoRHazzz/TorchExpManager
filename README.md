@@ -20,10 +20,46 @@ torchvision
 
 ```shell
 python AlexNet.py
+# python AlexNet.py --test --exp_name exp1
 ```
 
 ## Result
-
+1. 生成训练中每个epoch和每个iter的信息表格，包括运行时间和指定的指标。
+```
+logs
+└── exp1
+     ├── epoch_details
+     │         ├── epoch001_train.csv # epoch001 训练的iter信息
+     │         ├── epoch002_train.csv # epoch002 训练的iter信息
+     │         ├── epoch002_valid.csv # epoch002 验证的iter信息
+     │         ├── epoch002_test.csv  # epoch002 测试的iter信息
+     ├── saved_model
+     │         └── model_best.pt # 保存的模型
+     ├── summary_table.csv       # 下面三个表的合并表
+     ├── test_summary_table.csv  # 测试的总结信息
+     ├── train_summary_table.csv # 训练的总结信息，包括所有epoch
+     └── valid_summary_table.csv # 验证的总结信息，包括所有epoch
+```
+2. epoch进度条，以表格形式格式化输出指定的指标，并且自动评估预期结束时间。
+```
+Epoch 024/100 train: 100%|##########| 60000/60000 [00:31<00:00, 1880.39samples/s, loss_mean=0.0677, accuracy=0.975]
+Epoch 024/100 valid: 100%|##########| 10000/10000 [00:04<00:00, 2328.44samples/s, loss_mean=0.332, accuracy=0.925]
+2023-04-26 18:59:44 model saved to logs/tmp/saved_model/model_best.pt
++---------+---------+-------------+------------+-----------------+-----------------+------------+--------------+
+|  epoch  |  stage  |  loss_mean  |  loss_std  |  total_samples  |  total_correct  |  accuracy  |  epoch_time  |
+|---------+---------+-------------+------------+-----------------+-----------------+------------+--------------|
+|   24    |  train  |  0.0677369  | 0.0252625  |      60000      |      58500      |   0.975    |   31.7553    |
+|   24    |  valid  |  0.331805   | 0.0846502  |      10000      |      9253       |   0.9253   |   4.12765    |
++---------+---------+-------------+------------+-----------------+-----------------+------------+--------------+
+Time: 00:35 -> 13:13/55:44 | Expected end Time: 2023-04-26 19:42:15
+Best accuracy: 0.9253 (epoch 24) | Early stop count: 0/5
+```
+3. 按照指定的某个指标实现early stop，并且保存模型。
+```
+Sanity Check: save metric = 'accuracy'
+Sanity Check: save check op = '>' [current accuracy > best accuracy]
+Sanity Check: early stop threshold = 5
+```
 
 ## How to use
 

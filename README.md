@@ -54,7 +54,7 @@ Epoch 024/100 valid: 100%|##########| 10000/10000 [00:04<00:00, 2328.44samples/s
 Time: 00:35 -> 13:13/55:44 | Expected end Time: 2023-04-26 19:42:15
 Best accuracy: 0.9253 (epoch 24) | Early stop count: 0/5
 ```
-3. 按照指定的某个指标实现early stop，并且保存模型。
+3. 按照指定的某个指标(accuracy)实现early stop并保存模型。early stop threshold(5)次验证后没有提升将停止训练。
 ```
 Sanity Check: save metric = 'accuracy'
 Sanity Check: save check op = '>' [current accuracy > best accuracy]

@@ -94,3 +94,13 @@ def load_model(model: nn.Module, model_dir, ckpt_file_name, device):
     model.load_state_dict(check_point['state_dict'])
     print(f"{current_time_str()} model load from {ckpt_path}")
     return check_point
+
+
+def get_devices(gpu):
+    if isinstance(gpu, int):
+        gpu = [gpu]
+    if gpu:
+        devices = [f'cuda:{index}' for index in gpu if index < torch.cuda.device_count()]
+    else:
+        devices = ['cpu']
+    return devices

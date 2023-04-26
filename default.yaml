@@ -7,4 +7,4 @@ eval_interval: 2
 num_channels: 1
 num_workers: 10
 seed: 1234
-gpu: [0, 1, 2, 3]
+gpu: 0

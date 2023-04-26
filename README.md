@@ -22,6 +22,9 @@ torchvision
 python AlexNet.py
 ```
 
+## Result
+
+
 ## How to use
 
 1. 直接使用/继承 TorchExpManager.ModelWrapper。继承时重点在于实现自定义的xxx_func来实现xxx指标。

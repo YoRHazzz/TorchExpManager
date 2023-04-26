@@ -9,7 +9,7 @@ from torchvision import transforms, datasets
 from TorchExpManager import TorchExpManager
 from TorchExpManager.DataLoaderWrapper import BaseDataLoaderWrapper
 from TorchExpManager.ModelWrapper import ClassificationModelWrapper
-from TorchExpManager.utils import seed_everything, Config
+from TorchExpManager.utils import seed_everything, Config, get_devices
 
 NET_NAME = os.path.splitext(os.path.basename(__file__))[0]
 
@@ -27,9 +27,9 @@ def main():
     if 'seed' in config:
         seed_everything(config['seed'], determinstic=True)
 
-    devices = [index for index in config['gpu'] if index < torch.cuda.device_count()]
-    device = torch.device(f"cuda:{devices[0]}" if devices else "cpu")
+    devices = get_devices(config.get('gpu', None))
     print(f"Sanity Check: use gpu = {devices}")
+    device = torch.device(devices[0])
 
     resize = config.get('resize', 224)
     transforms_list = [transforms.ToTensor()]

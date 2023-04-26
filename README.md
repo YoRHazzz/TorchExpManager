@@ -63,31 +63,53 @@ Sanity Check: early stop threshold = 5
 
 ## How to use
 
-1. 直接使用/继承 TorchExpManager.ModelWrapper。继承时重点在于实现自定义的xxx_func来实现xxx指标。
-   目前ClassificationModelWrapper默认提供accuracy、num_correct指标的实现。
+1. 直接使用/继承 TorchExpManager.ModelWrapper。
+
+继承时重点在于
+   
+- 自定义的xxx_func来实现xxx指标。目前ClassificationModelWrapper默认提供accuracy、num_correct指标的实现。
+- 自定义collect：从每个iter收集信息生成当前epoch的summary
 
 ```python
 import torch
+from torch import nn
 from TorchExpManager.ModelWrapper import BaseModelWrapper
 from typing import Dict, Any
+import pandas as pd
 
-
-class MyModelWrapper(BaseModelWrapper):
+class ClassificationModelWrapper(BaseModelWrapper):
     def __init__(self, model, device):
         super().__init__(model, device)
+        self.criterion = nn.CrossEntropyLoss()
 
-    def loss_xxx_func(self, out, y, metric_result: Dict[str, Any]):
-        # out: return value of self.model.forward(dataloader.iter_data['x'])
-        # y: dataloader.iter_data['y']
-        metric_result['loss_xxx'] = 123
+    def loss_func(self, out, y, metric_result):
+        y = y.to(out.device)
+        metric_result['loss'] = self.criterion(out, y)
 
     @torch.no_grad()
-    def abc_func(self, out, y, metric_result: Dict[str, Any]):
-        metric_result['abc'] = '456'
+    def num_correct_func(self, out, y, metric_result):
+        y = y.to(out.device)
+        metric_result['num_correct'] = torch.eq(out.argmax(dim=1), y).sum()
+
+    @torch.no_grad()
+    def accuracy_func(self, out, y, metric_result):
+        if 'num_correct' not in metric_result:
+            self.num_correct_func(out, y, metric_result)
+        if 'num_samples' not in metric_result:
+            self.num_samples_func(out, y, metric_result)
+        metric_result['accuracy'] = metric_result['num_correct'] / metric_result['num_samples']
+
+    def collect(self, epoch_information: pd.DataFrame, epoch_summary: Dict[str, Any]) -> Dict[str, Any]:
+        if 'num_correct' in epoch_information:
+            epoch_summary['total_correct'] = epoch_information['num_correct'].sum()
+            epoch_summary['accuracy'] = epoch_summary['total_correct'] / epoch_summary['total_samples']
+        return epoch_summary
 ```
 
-2. 直接使用/继承 TorchExpManager.DataloaderWrapper。继承时重点在于重写split_iter_data。
-   iter_data['x']会当作样本传入model的forward函数.iter_data['y']会当作标签传入指标函数。
+2. 直接使用/继承 TorchExpManager.DataloaderWrapper。
+
+继承时重点在于
+- 重写split_iter_data。iter_data['x']会当作样本传入model的forward函数.iter_data['y']会当作标签传入指标函数。
 
 ```python
 from torch.utils.data import DataLoader
@@ -131,7 +153,7 @@ optimizer = ...
 kwargs = dict(
     model_wrapper=model_wrapper,
     train_dataloader=train_dataloader,
-    valid_dataloader=test_dataloader,
+    valid_dataloader=valid_dataloader,
     test_dataloader=test_dataloader,
     config=config,
     optimizer=optimizer,
@@ -141,7 +163,8 @@ kwargs = dict(
     only_test=args.test,
     save_metric='loss_xxx',
     save_check_op='>',
-    exp_name=args.exp_name
+    exp_name=args.exp_name,
+    early_stop_threshold=5,
 )
 exp_manager = TorchExpManager(**kwargs)
 exp_manager.run()

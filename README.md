@@ -161,10 +161,10 @@ kwargs = dict(
     valid_metrics={'accuracy'},  # 同上
     test_metrics={'loss', 'accuracy'},  # 同上
     only_test=args.test,
-    save_metric='loss_xxx',
+    save_metric='accuracy',
     save_check_op='>',
-    exp_name=args.exp_name,
     early_stop_threshold=5,
+    exp_name=args.exp_name,
 )
 exp_manager = TorchExpManager(**kwargs)
 exp_manager.run()

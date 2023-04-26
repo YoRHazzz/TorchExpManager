@@ -28,6 +28,7 @@ def main():
         seed_everything(config['seed'], determinstic=True)
 
     devices = [index for index in config['gpu'] if index < torch.cuda.device_count()]
+    device = torch.device(f"cuda:{devices[0]}" if devices else "cpu")
     print(f"Sanity Check: use gpu = {devices}")
 
     resize = config.get('resize', 224)
@@ -57,8 +58,6 @@ def main():
         nn.Linear(4096, 10)
     )
     optimizer = torch.optim.Adam(model.parameters())
-
-    device = torch.device("cuda:1")
 
     train_dataloader, test_dataloader = BaseDataLoaderWrapper(train_dataloader), BaseDataLoaderWrapper(test_dataloader)
     model_wrapper = ClassificationModelWrapper(model, device)

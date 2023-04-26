@@ -67,8 +67,8 @@ Sanity Check: early stop threshold = 5
 
 继承时重点在于
    
-- 自定义的xxx_func来实现xxx指标。目前ClassificationModelWrapper默认提供accuracy、num_correct指标的实现。
-- 自定义collect：从每个iter收集信息生成当前epoch的summary
+- 以metric_func的命名方式实现metric指标。目前ClassificationModelWrapper默认提供accuracy、num_correct指标的实现。
+- 重写collect：从每个iter收集信息生成当前epoch的summary
 
 ```python
 import torch
@@ -147,7 +147,7 @@ train_dataloader = BaseDataLoaderWrapper(train_dataloader)
 ...
 device = torch.device(...)
 model = ...
-model_wrapper = MyModelWrapper(model, device)
+model_wrapper = ClassificationModelWrapper(model, device)
 optimizer = ...
 
 kwargs = dict(
@@ -157,9 +157,9 @@ kwargs = dict(
     test_dataloader=test_dataloader,
     config=config,
     optimizer=optimizer,
-    train_metrics={'loss', 'abc'},  # 指定训练时计算loss abc这两个指标
-    valid_metrics={'abc'},  # 同上
-    test_metrics={'loss_xxx'},  # 同上
+    train_metrics={'loss', 'accuracy'},  # 指定训练时计算loss accuracy这两个指标
+    valid_metrics={'accuracy'},  # 同上
+    test_metrics={'loss', 'accuracy'},  # 同上
     only_test=args.test,
     save_metric='loss_xxx',
     save_check_op='>',
